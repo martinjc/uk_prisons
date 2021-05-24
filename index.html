@@ -761,21 +761,21 @@ const data = [
   { date: "07/2020", compassionateReleases: "3", endofCustody: "59"},
 ];
 
-const parse = d3.time.format("%m/%Y").parse;
+const parse = d3.timeFormat("%m/%Y").parse;
 
 
-let dataset = d3.layout.stack()(["endofCustody", "compassionateReleases"].map(function(releases) {
+let dataset = d3.stack()(["endofCustody", "compassionateReleases"].map(function(releases) {
   return data.map(function(d) {
     return {x: parse(d.date), y: +d[releases]};
   });
 }));
 console.log(dataset);
 
-var x = d3.scale.ordinal()
+var x = d3.scaleOrdinal()
   .domain(dataset[0].map(function(d) { return d.x; }))
   .rangeRoundBands([10, width-10], 0.02);
 
-var y = d3.scale.linear()
+var y = d3.scaleLinear()
   .domain([0, d3.max(dataset, function(d) {  return d3.max(d, function(d) { return d.y0 + d.y; });  })])
   .range([height, 0]);
 
@@ -783,16 +783,14 @@ var colors = ["#ffbb99", "#ccccff"];
 
 
 // Define and draw axes
-var yAxis = d3.svg.axis()
+var yAxis = d3.axisLeft()
   .scale(y)
-  .orient("left")
   .ticks(6)
   .tickSize(-width, 0, 0)
   .tickFormat( function(d) { return d } );
 
-var xAxis = d3.svg.axis()
+var xAxis = d3.axisBottom()
   .scale(x)
-  .orient("bottom")
   .tickFormat(d3.time.format("%m/%Y"));
 
 svg.append("g")
