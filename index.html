@@ -142,18 +142,517 @@
 	</div>
 	<br>
 <!-- ########################   VIZ_1   ################### -->
-	<div id="viz1" class="embed-responsive embed-responsive-4by3">
+		<div id="viz1">
+			<script>
+				(function(){
+					
+const width = 1000;
+const height = 600;
+const margin = 80;
+const padding = 0;
+const adj = 75;
+
+const svg = d3.select("div#viz1")
+    .append("svg")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "-"
+          + adj + " -"
+          + adj + " "
+          + (width + adj *3) + " "
+          + (height + adj*3))
+    .style("padding", padding)
+    .style("margin", margin)
+    .classed("svg-content", true);
+
+   const chart = svg.append('g');
+  
+  
+const timeConv = d3.timeParse("%d/%m/%Y");
+const dataset = d3.csv("https://raw.githubusercontent.com/MollySomers/Digital-Investigtion/main/communityprisonscovid.csv");
+dataset.then(function(data) {
+    const slices = data.columns.slice(1).map(function(id) {
+        return {
+            id: id,
+            values: data.map(function(d){
+                return {
+                    date: timeConv(d.date),
+                    measurement: +d[id]
+                };
+            })
+        };
+    });
+
+console.log("Column headers", data.columns);
+console.log("Column headers without date", data.columns.slice(1));
+
+console.log("Slices",slices);
+
+console.log("First slice",slices[0]);
+
+console.log("A array",slices[0].values);
+
+console.log("Date element",slices[0].values[0].date);
+
+console.log("Array length",(slices[0].values).length);
+
+const xScale = d3.scaleTime().range([0,width]);
+const yScale = d3.scaleLinear().rangeRound([height, 0]);
+xScale.domain(d3.extent(data, function(d){
+    return timeConv(d.date)}));
+yScale.domain([(0), d3.max(slices, function(c) {
+    return d3.max(c.values, function(d) {
+        return d.measurement + 1000; });
+        })
+    ]);
+
+const makeYLines = () => d3.axisLeft()
+    .scale(yScale) 
+
+ chart.append('g')
+    .attr("class", "axis")
+    .attr('transform', `translate(0, ${height})`)
+    .call(d3.axisBottom(xScale));
+  
+  chart.append('g')
+    .attr("class", "axis")
+    .call(d3.axisLeft(yScale))
+  
+    chart.append('g')
+    .attr('class', 'grid')
+    .call(makeYLines()
+    .tickSize(-width, 0, 0)
+    .tickFormat('')
+    );
+  
+const colors = ["#dba5e8", "#13f2a4"];
+  
+const yaxis = d3.axisLeft().scale(yScale);
+
+const xaxis = d3.axisBottom().scale(xScale)
+      .tickFormat(d3.timeFormat("%m/%y"));
+
+const line = d3.line()
+    .x(function(d) { return xScale(d.date); })
+    .y(function(d) { return yScale(d.measurement); });
+
+    let id = 0;
+    const ids = function () {
+        return "line-"+id++;
+    }
+
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("position", "absolute");
+
+     svg.append('text')
+        .attr('class', 'label')
+        .attr('x', -(height / 2.7) - margin)
+        .attr('y', -60)
+        .attr('transform', 'rotate(-90)')
+        .attr('text-anchor', 'middle')
+        .text("Rate per 100,000 population");
+
+    svg.append('text')
+        .attr('class', 'label');
+
+      svg.append('text')
+        .attr('class', 'title')
+        .attr('x', width / 2 + margin)
+        .attr('y', -50)
+        .attr('text-anchor', 'middle')
+        .text("Covid-19 case rates within prisons and the community")
+
+        svg.append('text')
+          .attr('class', 'title-subtitle')
+          .attr('x', width / 2 + margin)
+          .attr('y', -25)
+          .attr('text-anchor', 'middle')
+          .text("In England and Wales between January 2020 - April 2021")
+
+      svg.append('text')
+          .attr('class', 'label')
+          .attr('x', width / 4.3 + margin)
+          .attr('y', 565)
+          .attr('text-anchor', 'middle')
+          .text("⟵ The peak of the first wave")
+  
+     svg.append('text')
+          .attr('class', 'label2')
+          .attr('x', 680)
+          .attr('y', 85)
+          .attr('text-anchor', 'middle')
+          .text("The peak of the second wave ⟶ ")
+
+  
+      svg.append('text')
+        .attr('class', 'source')
+         .attr('x', 900)
+          .attr('y', 665)
+        .attr('text-anchor', 'start')
+        .text('Source: MoJ/HMPPS & ONS')
+
+const lines = svg.selectAll("lines")
+    .data(slices)
+    .enter()
+    .append("g");
+
+    lines.append("path")
+    .attr("class", ids)
+    .attr("d", function(d) { return line(d.values); });
+
+
+        lines.selectAll("points")
+            .data(function(d) {return d.values})
+            .enter()
+            .append("circle")
+            .attr("cx", function(d) { return xScale(d.date); })
+            .attr("cy", function(d) { return yScale(d.measurement); })
+            .attr("r", 1)
+            .attr("class","point")
+            .style("opacity", 1);
+  
+    var legend = svg.selectAll(".legend")
+  .data(colors)
+  .enter().append("g")
+  .attr("class", "legend")
+  .attr("transform", function(d, i) { return "translate(30," + i * 19 + ")"; });
+ 
+legend.append("rect")
+  .attr("x", width / 2 + -515)
+  .attr("y", -25)
+  .attr("width", 15)
+  .attr("height", 15)
+  .style("fill", function(d, i) {return colors.slice().reverse()[i];});
+ 
+legend.append("text")
+  .attr("x", width / 2 + -490)
+  .attr("y", -18)
+  .attr("dy", ".35em")
+  .style("text-anchor", "start")
+  .text(function(d, i) { 
+    switch (i) {
+      case 0: return "Covid-19 cases in the community";
+      case 1: return "Covid-19 cases in prisons";
+    }
+  });
+
+
+        lines.selectAll("circles")
+    .data(function(d) { return(d.values); })
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return xScale(d.date); })
+    .attr("cy", function(d) { return yScale(d.measurement); })
+    .attr('r', 10)
+    .style("opacity", 0)
+
+lines.selectAll("circles")
+    .data(function(d) { return(d.values); } )
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return xScale(d.date); })
+    .attr("cy", function(d) { return yScale(d.measurement); })
+    .attr('r', 10)
+    .style("opacity", 0)
+    .on('mouseover', function(d) {
+        tooltip.transition()
+        .delay(30)
+        .duration(200)
+        .style("opacity", 1);
+
+        tooltip.html(d.measurement)
+            .style("left", (d3.event.pageX + 25) + "px")
+            .style("top", (d3.event.pageY) + "px");
+
+        const selection = d3.select(this).raise();
+
+        selection
+            .transition()
+            .delay("20")
+            .duration("200")
+            .attr("r", 6)
+            .style("opacity", 1)
+            .style("fill","#ed3700");
+        })
+
+    .on("mouseout", function(d) {
+        tooltip.transition()
+        .duration(100)
+        .style("opacity", 0);
+
+        const selection = d3.select(this);
+
+        selection
+            .transition()
+            .delay("20")
+            .duration("200")
+            .attr("r", 10)
+            .style("opacity", 0);
+        });
+});
+				})();
+			</script>
+		</div>
+	<!-- <div id="viz1" class="embed-responsive embed-responsive-4by3">
 			<iframe class="embed-responsive-item" src="https://dazzling-quickest-catcher.glitch.me/"></iframe>
-	</div>
+	</div> -->
 	<br>
 	<div class="fourth_page_body">
 		<p>In the first three months of this year, 72 prisoners died from the disease in England and Wales. February 2021 was the deadliest month since the start of the pandemic, with 32 Covid-19 related deaths.</p>
 	</div>
 	<br>
 <!-- ########################   VIZ_2   ################### -->
-	<div id="viz2" class="embed-responsive embed-responsive-4by3">
+		<div id="viz2">
+			<script>
+				(function(){
+					
+const width = 1000;
+const height = 600;
+const margin = 80;
+const padding = 0;
+const adj = 75;
+
+const svg = d3.select("div#viz2").append("svg")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "-"
+          + adj + " -"
+          + adj + " "
+          + (width + adj *3) + " "
+          + (height + adj*3))
+    .style("padding", padding)
+    .style("margin", margin)
+    .classed("svg-content", true);
+ 
+ const chart = svg.append('g');
+  
+const timeConv = d3.timeParse("%d/%m/%Y");
+const dataset = d3.csv("https://raw.githubusercontent.com/MollySomers/Digital-Investigtion/main/deathscommunityandprisons2.csv");
+dataset.then(function(data) {
+    var slices = data.columns.slice(1).map(function(id) {
+        return {
+            id: id,
+            values: data.map(function(d){
+                return {
+                    date: timeConv(d.date),
+                    measurement: +d[id]
+                };
+            })
+        };
+    });
+  
+console.log("Column headers", data.columns);
+console.log("Column headers without date", data.columns.slice(1));
+
+console.log("Slices",slices);
+
+console.log("First slice",slices[0]);
+
+console.log("A array",slices[0].values);
+
+console.log("Date element",slices[0].values[0].date);
+
+console.log("Array length",(slices[0].values).length);
+
+const xScale = d3.scaleTime().range([0,width]);
+const yScale = d3.scaleLinear().rangeRound([height, 0]);
+xScale.domain(d3.extent(data, function(d){
+    return timeConv(d.date)}));
+yScale.domain([(0), d3.max(slices, function(c) {
+    return d3.max(c.values, function(d) {
+        return d.measurement + 15; });
+        })
+    ]);
+
+const makeYLines = () => d3.axisLeft()
+    .scale(yScale) 
+
+ chart.append('g')
+    .attr('transform', `translate(0, ${height})`)
+    .call(d3.axisBottom(xScale));
+  
+  chart.append('g')
+    .call(d3.axisLeft(yScale));
+  
+    chart.append('g')
+    .attr('class', 'grid')
+    .call(makeYLines()
+      .tickSize(-width, 0, 0)
+      .tickFormat('')
+    );
+  
+const colors = ["#fed8b1", "#50c4eb"];
+
+const yaxis = d3.axisLeft()
+    .ticks((slices[0].values).length)
+    .scale(yScale);
+
+const xaxis = d3.axisBottom()
+    .ticks(d3.timeMonth(1))
+    .tickFormat(d3.timeFormat('%m/%Y'))
+    .scale(xScale);
+
+  
+const line = d3.line()
+    .x(function(d) { return xScale(d.date); })
+    .y(function(d) { return yScale(d.measurement); });
+
+let id = 0;
+const ids = function () {
+    return "line-"+id++;
+}
+
+const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute");
+
+      svg.append('text')
+        .attr('class', 'label')
+        .attr('x', -(height / 2) - margin)
+        .attr('y', -60)
+        .attr('transform', 'rotate(-90)')
+        .attr('text-anchor', 'middle')
+        .text("Rate per 100,000 population");
+
+    svg.append('text')
+        .attr('class', 'label');
+
+      svg.append('text')
+        .attr('class', 'title')
+        .attr('x', width / 2 + margin)
+        .attr('y', -60)
+        .attr('text-anchor', 'middle')
+        .text("Covid-19 death rate within prisons and the community")
+
+        svg.append('text')
+          .attr('class', 'title-subtitle')
+          .attr('x', width / 2 + margin)
+          .attr('y', -40)
+          .attr('text-anchor', 'middle')
+          .text("In England and Wales between January 2020 - April 2021")
+  
+          svg.append('text')
+          .attr('class', 'label')
+          .attr('x', width / 4.5 + margin)
+          .attr('y', 170)
+          .attr('text-anchor', 'middle')
+          .text("⟵ The peak of the first wave")
+
+          svg.append('text')
+          .attr('class', 'label2')
+          .attr('x', width / 1.65 + margin)
+          .attr('y', 128)
+          .attr('text-anchor', 'middle')
+          .text("The peak of the second wave ⟶ ")
+
+  
+      svg.append('text')
+        .attr('class', 'source')
+        .attr('x', 900)
+        .attr('y', 660)
+        .attr('text-anchor', 'start')
+        .text('Source: MoJ/HMPPS & ONS')
+  
+const lines = svg.selectAll("lines")
+    .data(slices)
+    .enter()
+    .append("g");
+
+    lines.append("path")
+    .attr("class", ids)
+    .attr("d", function(d) { return line(d.values); });
+
+
+lines.selectAll("points")
+    .data(function(d) {return d.values})
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return xScale(d.date); })      
+    .attr("cy", function(d) { return yScale(d.measurement); })    
+    .attr("r", 1)
+    .attr("class","point")
+    .style("opacity", 1);
+
+  var legend = svg.selectAll(".legend")
+  .data(colors)
+  .enter().append("g")
+  .attr("class", "legend")
+  .attr("transform", function(d, i) { return "translate(30," + i * 19 + ")"; });
+ 
+legend.append("rect")
+  .attr("x", width / 2 + -510)
+  .attr("y", -40)
+  .attr("width", 15)
+  .attr("height", 15)
+  .style("fill", function(d, i) {return colors.slice().reverse()[i];});
+ 
+legend.append("text")
+  .attr("x", width / 2 + -485)
+  .attr("y", -33)
+  .attr("dy", ".35em")
+  .style("text-anchor", "start")
+  .text(function(d, i) { 
+    switch (i) {
+      case 0: return "Covid-19 deaths in the community";
+      case 1: return "Covid-19 deaths in prisons";
+    }
+  });
+
+
+//---------------------------EVENTS-----------------------------//    
+lines.selectAll("circles")
+    .data(function(d) { return(d.values); } )
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return xScale(d.date); })      
+    .attr("cy", function(d) { return yScale(d.measurement); })    
+    .attr('r', 10)
+    .style("opacity", 0)
+    .on('mouseover', function(d) {
+        tooltip.transition()
+            .delay(30)
+            .duration(200)
+            .style("opacity", 1);
+
+        tooltip.html(d.measurement)
+            .style("left", (d3.event.pageX + 25) + "px")
+            .style("top", (d3.event.pageY) + "px");
+
+        const selection = d3.select(this).raise();
+
+        selection
+            .transition()
+            .delay("20")
+            .duration("200")
+            .attr("r", 6)
+            .style("opacity", 1)
+            .style("fill","#ed3700");
+    })                
+    .on("mouseout", function(d) {      
+        tooltip.transition()        
+            .duration(100)      
+            .style("opacity", 0);  
+
+        const selection = d3.select(this);
+
+        selection
+            .transition()
+            .delay("20")
+            .duration("200")
+            .attr("r", 10)
+            .style("opacity", 0);
+    });
+
+});
+
+				})();
+			</script>
+		</div>
+		
+<!--		<div id="viz2" class="embed-responsive embed-responsive-4by3">
 			<iframe class="embed-responsive-item" src="https://spring-translucent-sunday.glitch.me/"></iframe>
-	</div>
+	</div>-->
 	<br>
 	<div class="fourth_page_body">
 		<p>“In the first wave, quite a lot of prisoners managed to avoid infection altogether remarkably,” Dawson says. “Most prisons have had an outbreak in the second one. I think that probably has to do with the nature of the virus, which like in the community, it appears that new variants have spread much more easily.”</p>
