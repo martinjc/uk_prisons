@@ -746,7 +746,7 @@ var margin = {top: 150, right: 220, bottom: 50, left: 220};
 var width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-let svg = d3.select("div#viz3")
+const svg = d3.select("div#viz3")
   .append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
@@ -754,14 +754,14 @@ let svg = d3.select("div#viz3")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-var data = [
+const data = [
   { date: "04/2020", compassionateReleases: "21", endofCustody: "30"},
   { date: "05/2020", compassionateReleases: "12", endofCustody: "65"},
   { date: "06/2020", compassionateReleases: "15", endofCustody: "61"},
   { date: "07/2020", compassionateReleases: "3", endofCustody: "59"},
 ];
 
-var parse = d3.time.format("%m/%Y").parse;
+const parse = d3.time.format("%m/%Y").parse;
 
 
 let dataset = d3.layout.stack()(["endofCustody", "compassionateReleases"].map(function(releases) {
@@ -769,7 +769,7 @@ let dataset = d3.layout.stack()(["endofCustody", "compassionateReleases"].map(fu
     return {x: parse(d.date), y: +d[releases]};
   });
 }));
-console.log(dataset)
+console.log(dataset);
 
 var x = d3.scale.ordinal()
   .domain(dataset[0].map(function(d) { return d.x; }))
