@@ -763,12 +763,11 @@ const data = [
 
 const parse = d3.timeParse("%m/%Y");
 
-
-let dataset = d3.stack()(["endofCustody", "compassionateReleases"].map(function(releases) {
-  return data.map(function(d) {
-    return {x: parse(d.date), y: +d[releases]};
-  });
-}));
+let stack = d3.stack()
+	.keys(['compassionateReleases', 'endofCustody']);
+					
+					
+let dataset = stack(data);
 console.log(dataset);
 
 var x = d3.scaleOrdinal()
