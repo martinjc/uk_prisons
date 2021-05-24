@@ -854,7 +854,7 @@ var rect = groups.selectAll("rect")
   .attr("x", function(d) { return x(d.x); })
   .attr("y", function(d) { return y(d.y0 + d.y); })
   .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
-  .attr("width", x.rangeBand())
+  .attr("width", x.bandwidth())
   .on("mouseover", function() { tooltip.style("display", null); })
   .on("mouseout", function() { tooltip.style("display", "none"); })
   .on("mousemove", function(d) {
