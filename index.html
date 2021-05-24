@@ -770,9 +770,9 @@ let stack = d3.stack()
 let dataset = stack(data);
 console.log(dataset);
 
-var x = d3.scaleOrdinal()
+var x = d3.scaleBand()
   .domain(dataset[0].map(function(d) { return d.x; }))
-  .rangeRoundBands([10, width-10], 0.02);
+  .rangeRound([10, width-10]);
 
 var y = d3.scaleLinear()
   .domain([0, d3.max(dataset, function(d) {  return d3.max(d, function(d) { return d.y0 + d.y; });  })])
