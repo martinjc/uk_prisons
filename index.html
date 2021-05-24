@@ -736,9 +736,185 @@ lines.selectAll("circles")
 	</div>
 	<br>
 <!-- ########################   VIZ_3   ################### -->
-	<div id="viz3" class="embed-responsive embed-responsive-4by3">
+	<!-- <div id="viz3" class="embed-responsive embed-responsive-4by3">
 		<iframe class="embed-responsive-item" src="https://navy-zigzag-curtain.glitch.me"></iframe>
-	</div>
+	</div>-->
+		<div id="viz3">
+			<script>
+				(function(){
+				
+var margin = {top: 150, right: 220, bottom: 50, left: 220};
+
+var width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var svg = d3.select("#viz3")
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var data = [
+  { date: "04/2020", compassionateReleases: "21", endofCustody: "30"},
+  { date: "05/2020", compassionateReleases: "12", endofCustody: "65"},
+  { date: "06/2020", compassionateReleases: "15", endofCustody: "61"},
+  { date: "07/2020", compassionateReleases: "3", endofCustody: "59"},
+];
+
+var parse = d3.time.format("%m/%Y").parse;
+
+
+var dataset = d3.layout.stack()(["endofCustody", "compassionateReleases"].map(function(releases) {
+  return data.map(function(d) {
+    return {x: parse(d.date), y: +d[releases]};
+  });
+}));
+
+var x = d3.scale.ordinal()
+  .domain(dataset[0].map(function(d) { return d.x; }))
+  .rangeRoundBands([10, width-10], 0.02);
+
+var y = d3.scale.linear()
+  .domain([0, d3.max(dataset, function(d) {  return d3.max(d, function(d) { return d.y0 + d.y; });  })])
+  .range([height, 0]);
+
+var colors = ["#ffbb99", "#ccccff"];
+
+
+// Define and draw axes
+var yAxis = d3.svg.axis()
+  .scale(y)
+  .orient("left")
+  .ticks(6)
+  .tickSize(-width, 0, 0)
+  .tickFormat( function(d) { return d } );
+
+var xAxis = d3.svg.axis()
+  .scale(x)
+  .orient("bottom")
+  .tickFormat(d3.time.format("%m/%Y"));
+
+svg.append("g")
+  .attr("class", "y axis")
+  .call(yAxis);
+  
+svg.append("g")
+  .attr("class", "x axis")
+  .attr("transform", "translate(0," + height + ")")
+  .call(xAxis);
+
+    svg.append('text')
+        .attr('class', 'label')
+        .attr('x', -(height / 2) - 0)
+        .attr('y', -40)
+        .attr('transform', 'rotate(-90)')
+        .attr('text-anchor', 'middle')
+        .text("Prisoners Released");
+  
+      svg.append('text')
+        .attr('class', 'label');
+
+      svg.append('text')
+        .attr('class', 'title')
+        .attr('x', width / 2 + -430)
+        .attr('y', -120)
+        .attr('text-anchor', 'center')
+        .text("End of Custody Release for Prisoners during the Pandemic in England and Wales")
+
+  svg.append('text')
+          .attr('class', 'title-subtitle')
+          .attr('x', width / 2 + -320)
+          .attr('y', -95)
+          .attr('text-anchor', 'center')
+          .text("Compassionate Releases: This includes pregnant women, those with babies and prisoners with high vulnerability to the virus")
+        
+  svg.append('text')
+          .attr('class', 'title-subtitle2')
+          .attr('x', width / 2 + -330)
+          .attr('y', -70)
+          .attr('text-anchor', 'center')
+          .text("End of Custody Temporary Release: The release of low-risk offenders near the end of their custodial sentence")
+
+  
+      svg.append('text')
+        .attr('class', 'source')
+          .attr('x', width / 2 + 230)
+          .attr('y', 330)
+        .attr('text-anchor', 'start')
+        .text('Source: NOMIS');
+
+var groups = svg.selectAll("g.cost")
+  .data(dataset)
+  .enter().append("g")
+  .attr("class", "cost")
+  .style("fill", function(d, i) { return colors[i]; });
+
+var rect = groups.selectAll("rect")
+  .data(function(d) { return d; })
+  .enter()
+  .append("rect")
+  .attr("x", function(d) { return x(d.x); })
+  .attr("y", function(d) { return y(d.y0 + d.y); })
+  .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+  .attr("width", x.rangeBand())
+  .on("mouseover", function() { tooltip.style("display", null); })
+  .on("mouseout", function() { tooltip.style("display", "none"); })
+  .on("mousemove", function(d) {
+    var xPosition = d3.mouse(this)[0] - 15;
+    var yPosition = d3.mouse(this)[1] - 25;
+    tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+    tooltip.select("text").text(d.y);
+  });
+
+
+var legend = svg.selectAll(".legend")
+  .data(colors)
+  .enter().append("g")
+  .attr("class", "legend")
+  .attr("transform", function(d, i) { return "translate(30," + i * 19 + ")"; });
+ 
+legend.append("rect")
+  .attr("x", width -730)
+  .attr("y", -45)
+  .attr("width", 18)
+  .attr("height", 18)
+  .style("fill", function(d, i) {return colors.slice().reverse()[i];});
+ 
+legend.append("text")
+  .attr("x", width + -705)
+  .attr("y", -36)
+  .attr("dy", ".35em")
+  .style("text-anchor", "start")
+  .text(function(d, i) { 
+    switch (i) {
+      case 0: return "Compassionate Releases";
+      case 1: return "End of Custody Releases";
+      case 2: return "Total Releases";
+    }
+  });
+
+
+var tooltip = svg.append("g")
+  .attr("class", "tooltip")
+  .style("display", "none");
+    
+tooltip.append("rect")
+  .attr("width", 30)
+  .attr("height", 20)
+  .attr("fill", "white")
+  .style("opacity", 0.5);
+
+tooltip.append("text")
+  .attr("x", 15)
+  .attr("dy", "1.2em")
+  .style("text-anchor", "middle")
+  .attr("font-size", "12px")
+  .attr("font-weight", "bold");
+				})();
+			</script>
+		</div>
 	<br>
 	<div class="fifth_page_body">
 		<p>“The Early Release Scheme was bound to fail from the start,” Dawson says. “No one when they saw the scheme as it was written expected that it would produce anything like 4,000 releases because that would have been politically unwelcome.”</p>
