@@ -761,7 +761,7 @@ const data = [
   { date: "07/2020", compassionateReleases: "3", endofCustody: "59"},
 ];
 
-const parse = d3.timeFormat("%m/%Y").parse;
+const parse = d3.timeParse("%m/%Y");
 
 
 let dataset = d3.stack()(["endofCustody", "compassionateReleases"].map(function(releases) {
